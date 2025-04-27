@@ -1,28 +1,152 @@
-REMIX DEFAULT WORKSPACE
+abitrage.sol
+(AI-Powered Game Asset Arbitrage Bot)
 
-Remix default workspace is present when:
-i. Remix loads for the very first time 
-ii. A new workspace is created with 'Default' template
-iii. There are no files existing in the File Explorer
+Purpose:
+This smart contract automates buying/selling of gaming assets (tokens, NFTs) across multiple chains or marketplaces, 
+using an AI strategy to profit from price differences.
 
-This workspace contains 3 directories:
+struct ArbitrageOpportunity {
+    address asset; // NFT or token address
+    uint256 buyPrice;
+    uint256 sellPrice;
+    address buyMarketplace;
+    address sellMarketplace;
+    bool executed;
+}
 
-1. 'contracts': Holds three contracts with increasing levels of complexity.
-2. 'scripts': Contains four typescript files to deploy a contract. It is explained below.
-3. 'tests': Contains one Solidity test file for 'Ballot' contract & one JS test file for 'Storage' contract.
+mapping(uint256 => ArbitrageOpportunity) public opportunities;
 
-SCRIPTS
+Flow:
+AI off-chain bot finds opportunities.
+Bot calls smart contract to execute profitable trades.
+Contract locks asset temporarily and resells.
 
-The 'scripts' folder has four typescript files which help to deploy the 'Storage' contract using 'web3.js' and 'ethers.js' libraries.
 
-For the deployment of any other contract, just update the contract's name from 'Storage' to the desired contract and provide constructor arguments accordingly 
-in the file `deploy_with_ethers.ts` or  `deploy_with_web3.ts`
+nftliquidity.sol
+(Cross-Game NFT Liquidity Pools)
+Purpose:
+Allow users to stake NFTs into a pool → get liquidity tokens (LP tokens) → trade those tokens or redeem back the NFT.
+Key data structures:
+struct LiquidityPosition {
+    address owner;
+    address nftAddress;
+    uint256 tokenId;
+    uint256 liquidityTokens;
+    bool active;
+}
 
-In the 'tests' folder there is a script containing Mocha-Chai unit tests for 'Storage' contract.
+mapping(uint256 => LiquidityPosition) public positions;
 
-To run a script, right click on file name in the file explorer and click 'Run'. Remember, Solidity file must already be compiled.
-Output from script will appear in remix terminal.
+Flow:
+User deposits NFT → receives LP tokens.
+Others can buy/sell LP tokens.
+Redeem LP tokens to withdraw original NFT
 
-Please note, require/import is supported in a limited manner for Remix supported modules.
-For now, modules supported by Remix are ethers, web3, swarmgw, chai, multihashes, remix and hardhat only for hardhat.ethers object/plugin.
-For unsupported modules, an error like this will be thrown: '<module_name> module require is not supported by Remix IDE' will be shown.
+pool.sol
+(Restaking-Powered Asset Pools)
+Purpose:
+Users deposit NFTs, tokens, or game assets into a pool that automatically "restakes" them into external DeFi protocols to generate yield.
+Key data structures:
+struct AssetDeposit {
+    address depositor;
+    address assetAddress;
+    uint256 assetIdOrAmount;
+    bool isNFT;
+    uint256 timestamp;
+}
+
+mapping(uint256 => AssetDeposit) public deposits;
+
+Flow:
+User deposits asset.
+Contract restakes asset into yield-generating protocols (like EigenLayer restaked security, LRTs, etc.)
+Yield collected and distributed periodically.
+
+restake_yield.sol
+(Restaking Yield Generator)
+
+Purpose:
+Specialized contract that manages delegation of deposited assets to restaking protocols to earn additional yield.
+
+Key data structures:
+
+solidity
+Copy
+Edit
+struct RestakePosition {
+    address user;
+    uint256 principalAmount;
+    uint256 accumulatedYield;
+    uint256 lastHarvest;
+}
+mapping(address => RestakePosition) public restakePositions;
+
+Flow:
+User's assets are delegated/restaked.
+Yield is harvested and updated.
+User can claim accumulated yield.
+
+restakedao.sol
+(Restake DAO Studio)
+
+Purpose:
+DAO governance system for incubating gaming projects, voting on which games/assets should be supported, funded, or restaked.
+
+Key data structures:
+
+solidity
+Copy
+Edit
+struct Proposal {
+    uint256 id;
+    address proposer;
+    string description;
+    uint256 voteFor;
+    uint256 voteAgainst;
+    bool executed;
+    uint256 deadline;
+}
+
+mapping(uint256 => Proposal) public proposals;
+mapping(address => uint256) public votingPower;
+Flow:
+
+DAO members create proposals.
+
+Members vote (stake-based voting power).
+
+Execute winning proposals (e.g., restake new assets, support new game).
+
+6. stake.sol
+(General Asset Staking Contract)
+
+Purpose:
+A unified staking contract where players can lock their NFTs or tokens to earn base rewards, additional bonuses from restaking, and DAO points.
+
+Key data structures:
+
+solidity
+Copy
+Edit
+struct StakeInfo {
+    address staker;
+    address assetAddress;
+    uint256 assetIdOrAmount;
+    uint256 startTime;
+    bool isNFT;
+}
+
+mapping(address => StakeInfo[]) public stakes;
+
+Flow:
+User stakes assets.
+Rewards accumulate over time.
+User unstakes assets + collects rewards.
+
+📜 Overall:
+abitrage.sol — Executes profitable cross-market trades.
+nftliquidity.sol — Makes NFTs liquid and tradable.
+pool.sol — Collects gaming assets into pools.
+restake_yield.sol — Generates extra passive yield from pools.
+restakedao.sol — Governs game project funding and asset allocation.
+stake.sol — Core staking for users.
